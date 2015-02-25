@@ -15,3 +15,4 @@ For example
 term.sh "echo 'hello world'" "Novel" 640 320 500 50
 ```
 -**newdwin**: create a new Terminal window using my "DeskNames" settings. Here's the result:
+![DeskNames Example](images/DeskNames.png)
