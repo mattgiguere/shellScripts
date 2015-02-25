@@ -13,10 +13,10 @@ With many projects going at the same time, and many desktops open, it is difficu
 ![IPy Green Example](images/IPyGreen.png)
 - **term.sh**: A script for opening a new Mac OS X terminal window with the desired command, window settings, size, and position. It is based on [David Moles' response](http://stackoverflow.com/a/28373404/3854235) to [this](http://stackoverflow.com/questions/4404242/programmatically-launch-terminal-app-with-a-specified-command-and-custom-colors) [stackoverflow](stackoverflow.com) question, but tweaked to optionally set the size and position.
 The syntax is
-```sh
-term.sh "command" "window settings" width height y-position x-position
-```
+    ```sh
+    term.sh "command" "window settings" width height y-position x-position
+    ```
 For example
-```sh
-term.sh "echo 'hello world'" "Novel" 640 320 500 50
-```
+    ```sh
+    term.sh "echo 'hello world'" "Novel" 640 320 500 50
+    ```
