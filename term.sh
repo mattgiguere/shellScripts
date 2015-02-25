@@ -39,7 +39,6 @@ on runSimple(command)
 end runSimple
 
 on runWithProfile(command, profile, winSize, winPos)
-  set command to "echo " & winSize
   set newTab to runSimple(command)
   tell application "Terminal" to set current settings of newTab to (first settings set whose name is profile)
   tell application "System Events"
