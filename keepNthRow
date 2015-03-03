@@ -1,0 +1,51 @@
+#!/bin/bash
+#Created on: 20150302
+#Author: Matt Giguere
+
+#help info:
+show_help() {
+	cat << EOF
+	Usage: keepNthRow --help --verbose --header INPUTFILE -f OUTPUTFILE
+	Extract every nth row from the input file. If the output file is not
+	set, or the verbose argument is set, results will be printed to 
+	screen.
+
+	--help | -h    display this help text and exit
+	-f             OUTPUTFILE write the result to OUTPUTFILE instead 
+	               of standard output
+	-v             verbose mode. result will be printed to screen 
+				   regardless of whether or not the outputfile is
+				   specified.
+	--header       in addition to keeping every nth row, specifying
+	               the --header optional argument will keep the 
+	               first row. This is useful if the first row 
+	               contains the column names. 
+	EOF
+}
+################
+#INPUT:
+#   :param 1: input file
+#  
+#   :param 2: output file
+#
+#   :param -n: n to keep. For example, setting this to 10 will write
+#              every tenth row from the input file to the output file
+#
+#   :param -h | --header: if set, the header row will be kept as well.
+#
+
+INPUTFILE="$1"
+shift
+OUTPUTFILE="$1"
+
+echo The input file is \"${INPUTFILE}\"
+echo The output file is \"${OUTPUTFILE}\"
+
+while [[ $# > 0 ]]
+do 
+key=$1
+echo ${key}
+
+#now shift (or increment) to the next argument:
+shift
+done
