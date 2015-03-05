@@ -1,0 +1,24 @@
+#!/bin/csh -f
+
+echo "Now running the calibrations..."
+
+set chi_hour = `ssh ctimac1 date "+%H"`
+
+if ($chi_hour <= "4") then
+echo "Wow, you started really late!"
+set chi_date = `ssh ctimac1 date -v -1d "+%y%m%d"`
+else
+set chi_date = `ssh ctimac1 date "+%y%m%d"`
+endif
+
+#set chi_date = `ssh ctimac1 date -v -1d "+%y%m%d"`
+#echo $chi_date
+set log = ~/apps/CHIRON/bin/calib_logs/${chi_date}_test.log
+start_viewlog $log
+calib_test >> $log
+
+echo "logged some output"
+
+echo Output saved to ${chi_date}_test.log
+
+kill_viewlog $log

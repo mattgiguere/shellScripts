@@ -1,0 +1,20 @@
+#!/bin/csh -f
+
+echo "setting detetcor size ..."
+pan appmacro set_roi full
+echo "setting detetcor binning ..."
+pan appmacro set_binning 1 1
+echo "setting detetcor speed ..."
+pan appmacro speed_fast
+echo "positioning slicer motor to slicer position ..."
+slicer MOVE slicer
+set pos = `iodcell get iodine`
+if ("$pos[2]" == "ON" || "$pos[2]" == "IN") then
+        echo "moving iodine cell OUT ..."
+        iodcell set iodine OFF
+else
+        echo "iodine cell is OUT"
+endif
+echo "setting geometry mode ..."
+pan dbs set geom_mode Slicer11_iout STR
+pan dhe async GUIUPDATE geometry

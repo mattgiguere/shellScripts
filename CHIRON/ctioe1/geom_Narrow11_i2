@@ -1,0 +1,17 @@
+#!/bin/csh -f
+
+echo "setting detetcor size ..."
+#pan appmacro set_roi 751 3250 1 4112
+pan appmacro set_roi FULL
+echo "setting detetcor binning ..."
+pan appmacro set_binning 1 1
+echo "setting detetcor speed ..."
+pan appmacro speed_fast
+echo "positioning slicer motor to narrow_slit position ..."
+slicer MOVE narrow_slit
+set pos = `iodcell get iodine`
+        iodcell set iodine IN
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode Narrow11_i2 STR
+pan dhe async GUIUPDATE geometry

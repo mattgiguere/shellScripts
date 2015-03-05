@@ -1,0 +1,160 @@
+#!/bin/csh -f 
+
+echo "Initiating ThAr Script for slicer position..."
+date
+
+echo "setting detetcor size ..."
+pan appmacro set_roi FULL
+
+echo "setting detetcor speed ..."
+pan appmacro speed_fast
+
+echo "positioning slicer motor to slicer position ..."
+slicer MOVE slicer
+
+set pos = `iodcell get iodine`
+if ("$pos[2]" == "OFF" || "$pos[2]" == "OUT") then
+        echo "iodine cell already OUT"
+else
+        echo "moving iodine cell OUT ..."
+        iodcell set iodine OUT
+endif
+
+set chi_hour = `ssh ctimac1 date "+%H"`
+
+if ($chi_hour <= "9") then
+echo "Wow, you started really late!"
+set chi_date = `ssh ctimac1 date -v -1d "+%y%m%d"`
+else
+set chi_date = `ssh ctimac1 date "+%y%m%d"`
+endif
+
+echo "chi_date is: "                                  
+echo $chi_date      
+
+set chi_dir = '/data/'$chi_date
+echo "chi_dir is: "
+echo $chi_dir
+
+mkdir $chi_dir
+
+echo "Retrieving the Basename from the CHIRON GUI..."
+set chi_base = `pan get image.basename`
+echo "The Basename is: "
+echo $chi_base
+
+echo "Retrieving the Starting Sequence # from the CHIRON GUI..."
+set obs_start = `pan get image.number`
+echo "The starting Observation # is: "
+echo $obs_start
+
+
+echo "Setting the proposal ID..."
+#pan dbs set propid CPS
+#pan dhe async GUIUPDATE propid
+
+
+#set it so the GUI does not automatically turn the lamps off                 
+#after the end of the sequence                                                   
+CHIRON2 OPTGUI GUI UPDATE autolamps off
+
+echo "setting detetcor speed ..."
+pan appmacro speed_fast
+
+################################################################
+################################################################          
+#                THORIUM ARGON              
+################################################################                 
+################################################################                      
+
+echo echo "setting detetcor binning ..."
+pan appmacro set_binning 1 1
+
+echo "positioning slicer motor to slicer position ..."
+slicer MOVE slicer
+
+"Turning the ThAr lamp on..."
+lamp set TH-AR on
+
+echo "Setting the exposure time to 1 seconds..."
+pan set exptime 0500
+
+echo "Setting the image title..."
+pan set image.title "ThAr"
+pan dhe async GUIUPDATE title
+
+#echo "Setting image comment..."
+#pan set image.comment "lamp check before calibration script"
+#pan dhe async GUIUPDATE comment
+
+echo "Setting the base name..."
+pan set image.basename $chi_base
+pan dhe async GUIUPDATE basename
+
+echo "Setting the image number..."
+pan set image.number $obs_start
+pan dhe async GUIUPDATE imnumber
+
+echo "Setting the # Exp. ..."
+pan set obs.numreads 1
+pan dhe async GUIUPDATE nimages
+
+echo "Setting the observation type..."
+pan set obs.obstype "Calibration"
+
+echo "Setting autoshutter on..."
+pan set autoshutter on
+
+echo "Setting the image directory..."
+pan set image.directory $chi_dir
+pan set image.dir $chi_dir
+pan dhe async GUIUPDATE directory
+pan dhe async GUIUPDATE dir
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode lamp_check STR
+
+echo "updating the GUI..."
+pan dhe async GUIUPDATE geometry
+
+
+echo "Now exposing Narrow_slit ThAr..."
+pan expose
+
+echo echo "setting detetcor binning ..."
+pan appmacro set_binning 1 1
+
+echo "positioning slicer motor to slicer position ..."
+slicer MOVE narrow_slit
+
+"Turning the ThAr lamp on..."
+lamp set TH-AR on
+
+echo "Setting the exposure time to 1 seconds..."
+pan set exptime 1000
+
+echo "Now exposing Narrow_slit ThAr..."
+pan expose
+
+echo "Turning the ThAr lamp off.."
+lamp set TH-AR off
+
+echo "Removing image comment..."
+pan set image.comment ""
+pan dhe async GUIUPDATE comment
+
+echo "Now configuring for the next observation..."
+
+#echo "setting detetcor binning ..."
+#pan appmacro set_binning 3 1
+
+#echo "setting detetcor speed ..."
+#pan appmacro speed_fast
+
+#slicer MOVE narrow_slit
+#set pos = `iodcell get iodine`
+#        iodcell set iodine IN
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode Slicer_iout STR
+pan dhe async GUIUPDATE geometry

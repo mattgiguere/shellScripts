@@ -1,0 +1,121 @@
+#!/bin/csh -f
+
+echo "Now taking a Quartz with I2 exposure..."
+
+date
+
+echo "Turning off autolamps update..."
+CHIRON2 OPTGUI GUI update autolamps off
+
+echo "setting detetcor size ..."
+pan appmacro set_roi FULL
+
+echo "setting detetcor binning ..."
+pan appmacro set_binning 3 1
+
+echo "setting detetcor speed ..."
+pan appmacro speed_fast
+
+echo "positioning slicer motor to narrow_slit position ..."
+slicer MOVE narrow_slit
+
+pan set image.comment " "
+pan dhe async GUIUPDATE comment
+sleep 2
+
+pan dbs set propid CPS STR
+pan dhe async GUIUPDATE propid
+
+sleep 2
+
+echo "Retrieving the Directory from the CHIRON GUI..."
+set chi_dir = `pan get image.directory`
+echo "The directory name is: "
+echo $chi_dir
+
+echo "Retrieving the Basename from the CHIRON GUI..."
+set chi_base = `pan get image.basename`
+echo "The Basename is: "
+echo $chi_base
+
+echo "Retrieving the Starting Sequence # from the CHIRON GUI..."
+set obs_start = `pan get image.number`
+echo "The starting Observation # is: "
+echo $obs_start
+
+echo "Setting the base name..."
+pan set image.basename $chi_base
+
+echo "Setting the image number..."
+pan set image.number $obs_start
+
+echo "Setting the image directory..."
+pan set image.directory $chi_dir
+
+echo "Setting the # Exp. ..."
+pan set obs.numreads 3
+
+echo "Setting the observation type..."
+pan set obs.obstype "Calibration"
+pan dhe async GUIUPDATE obstype CALIBRATION
+sleep 2
+echo "Setting autoshutter on..."
+pan set autoshutter on
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode Quartz_i2 STR
+
+echo "updating the GUI..."
+pan dhe async GUIUPDATE geometry Quartz_i2
+
+echo "Turning the Quartz lamp on..."
+lamp set QUARTZ on
+
+echo "Setting the image title..."
+pan set image.title "iodine"
+
+
+set pos = `iodcell get iodine`
+if ("$pos[2]" == "ON" || "$pos[2]" == "IN") then
+        echo "iodine cell already IN"
+else
+        echo "moving iodine cell IN ..."
+        iodcell set iodine IN
+endif
+
+######## NARROW iodine ############                                                       
+echo "Now taking the narrow_slit iodine..."
+
+echo "Setting the exposure time to 4 seconds..."
+pan set exptime 4000
+
+echo "Now exposing Narrow_slit iodine..."
+pan expose
+
+######## SLICER iodine ############                                                       
+#echo "WORK!!!"
+
+echo "Setting the # Exp. ..."
+pan set obs.numreads 3
+
+echo "positioning slicer motor to slicer position ..."
+slicer MOVE slicer
+
+echo "Setting the exposure time to 2 seconds..."
+pan set exptime 2000
+
+echo "Turning the Quartz lamp on..."
+lamp set QUARTZ on
+
+echo "Turning off autolamps update..."
+CHIRON2 OPTGUI GUI update autolamps off
+
+echo "Now exposing Slicer iodine..."
+pan expose
+
+echo "Turning the Quartz lamp off..."
+lamp set QUARTZ off
+
+echo "Now setting the GUI to Slicer_i2 mode..."
+pan dbs set geom_mode Slicer_i2 STR
+pan dhe async GUIUPDATE geometry Slicer_i2

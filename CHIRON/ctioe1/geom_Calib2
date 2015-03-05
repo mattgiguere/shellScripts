@@ -1,0 +1,18 @@
+#!/bin/csh -f
+
+echo "Now running the calibrations..."
+
+set chi_date = `ssh ctimac1 date -v -1d "+%y%m%d"`
+echo $chi_date
+set log = ~/apps/CHIRON/bin/calib_logs/${chi_date}_end.log
+start_viewlog $log
+
+calib_end >> $log
+
+echo "logged some output"
+
+echo Output saved to ${chi_date}_end.log
+
+ssh ctimac1 mail -s "Log_for_Calibrations_"${chi_date}_end.log matthew.giguere@gmail.com <  ~/apps/CHIRON/bin/calib_logs/${chi_date}_end.log
+
+kill_viewlog $log

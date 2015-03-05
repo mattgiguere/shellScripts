@@ -1,0 +1,20 @@
+#!/bin/csh -f
+
+echo "setting detector size ..."
+pan appmacro set_roi full
+echo "setting detector binning ..."
+pan appmacro set_binning 3 1
+echo "setting detector speed ..."
+pan appmacro speed_fast
+echo "positioning slicer motor to Slit position ..."
+slicer MOVE slit
+set pos = `iodcell get iodine`
+if ("$pos[2]" == "ON" || "$pos[2]" == "IN") then
+        echo "iodine cell already IN"
+        iodcell set iodine OUT
+else
+        echo "iodine cell already OUT ..."
+endif
+echo "setting geometry mode ..."
+pan dbs set geom_mode Slit_iout STR
+pan dhe async GUIUPDATE geometry Slit_iout

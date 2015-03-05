@@ -1,0 +1,882 @@
+#!/bin/csh -f
+
+echo "Initiating Calibration script..."
+date
+
+echo "setting detector size ..."
+pan appmacro set_roi FULL
+
+echo "setting detector binning ..."
+pan appmacro set_binning 3 1
+
+echo "setting detector speed ..."
+pan appmacro speed_fast
+
+echo "positioning slicer motor to narrow_slit position ..."
+slicer MOVE narrow_slit
+
+set pos = `iodcell get iodine`
+if ("$pos[2]" == "OFF" || "$pos[2]" == "OUT") then
+        echo "iodine cell already OUT"
+else
+        echo "moving iodine cell OUT ..."
+        iodcell set iodine OUT
+endif
+
+set chi_hour = `ssh ctimac1 date "+%H"`
+
+if ($chi_hour <= "4") then
+echo "Wow, you started really late!"
+set chi_date = `ssh ctimac1 date -v -1d "+%y%m%d"`
+else
+set chi_date = `ssh ctimac1 date "+%y%m%d"`
+endif
+
+#set chi_date = `ssh ctimac1 date -v -1d "+%y%m%d"`
+#echo "chi_date is: "
+#echo $chi_date
+
+
+set chi_dir = "/data/"$chi_date
+echo "chi_dir is: "
+echo $chi_dir
+
+mkdir $chi_dir
+
+pan dhe async GUIUPDATE directory $chi_dir
+
+
+
+
+echo "Setting the Basename..."
+pan set image.basename 'chi'$chi_date'.'
+pan dhe async GUIUPDATE basename
+echo "Retrieving the Basename from the CHIRON GUI..."
+set chi_base = `pan get image.basename`
+echo "The Basename is: "
+echo $chi_base
+
+sleep 2
+
+set im_numb = `pan get image.number`
+echo "The image number is: "$im_numb
+if ($im_numb >= 1300) then 
+echo "Now setting the image number to 1000"
+pan set image.number 1000
+endif
+
+pan dhe async GUIUPDATE imnumber
+echo "Retrieving the Starting Sequence # from the CHIRON GUI..."
+set obs_start = `pan get image.number`
+
+echo "The starting Observation # is: "
+echo $obs_start
+
+#set it so the GUI does not automatically turn the lamps off
+#after the end of the sequence
+CHIRON2 OPTGUI GUI UPDATE autolamps off
+
+################################################################
+################################################################
+#                THORIUM ARGON
+################################################################
+################################################################
+
+echo "Turning the ThAr lamp on..."
+lamp set TH-AR on
+
+echo "Setting the exposure time to 2 seconds..."
+pan set exptime 1000
+pan dhe async GUIUPDATE exptime
+
+sleep 2
+
+echo "Setting the image title..."
+pan set image.title "ThAr"
+pan dhe async GUIUPDATE title
+
+sleep 2
+
+echo "Setting the base name..."
+pan set image.basename $chi_base
+pan dhe async GUIUPDATE basename
+
+sleep 2
+
+echo "Setting the image number..."
+pan set image.number $obs_start
+pan dhe async GUIUPDATE imnumber
+
+sleep 2
+
+echo "Setting the # Exp. ..."
+pan set obs.nimages 1
+pan dhe async GUIUPDATE nimages
+
+sleep 2
+
+echo "Now setting the observer"
+set observer  = `pan get obs.observer`
+echo "The observer is: "
+echo $observer
+
+#if ($observer == "_NONE_") then 
+#   echo "Setting the Observer ... "
+#   pan set obs.observer calib_beg
+#   pan dhe async GUIUPDATE observer
+#endif
+
+echo "Now waiting one moment"
+sleep 2
+
+
+echo "Setting the observation type..."
+pan set obs.obstype Calibration
+pan dhe async GUIUPDATE obstype
+sleep 1
+
+pan set image.comment " "
+pan dhe async GUIUPDATE comment
+sleep 2
+
+pan dbs set propid Calib STR
+pan dhe async GUIUPDATE propid
+
+sleep 2
+#sleep 1
+#pan dhe async GUIUPDATE obstype Calibration
+
+echo "Setting autowrite to disk on..."
+#pan set autowrite on
+
+echo "Setting autoshutter on..."
+pan set autoshutter on
+
+echo "Setting the image directory..."
+pan set image.directory $chi_dir
+pan set image.dir $chi_dir
+pan dhe async GUIUPDATE directory
+pan dhe async GUIUPDATE dir
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode Calib. STR
+
+echo "updating the GUI..."
+pan dhe async GUIUPDATE geometry
+
+
+echo "Now exposing Narrow_slit ThAr..."
+pan expose
+
+
+######## SLIT Th-Ar ############
+echo "positioning slicer motor to slit position ..."
+slicer MOVE slit
+
+echo "Setting the exposure time to 1 seconds..."
+pan set exptime 0500
+
+echo "Now exposing Slit ThAr..."
+lamp set TH-AR on
+pan expose
+
+######## SLICER Th-Ar ############
+echo "positioning slicer motor to slicer position ..."
+slicer MOVE slicer
+
+#This is the same as the previous exposure:
+#echo "Setting the exposure time to 2 seconds..."
+#dhe set exptime 1000
+
+echo "Now exposing Slicer ThAr..."
+lamp set TH-AR on
+pan expose
+
+######## Fiber Th-Ar ############
+echo "positioning slicer motor to fiber position ..."
+slicer MOVE fiber
+
+echo "setting detector binning ..."
+pan appmacro set_binning 4 4
+
+echo "setting detector speed ..."
+pan appmacro speed_normal
+
+echo "Setting the exposure time to 0.5 seconds..."
+pan set exptime 0250
+
+echo "Now exposing Fiber ThAr..."
+lamp set TH-AR on
+pan expose
+
+echo "Turning the ThAr lamp off..."
+lamp set TH-AR off
+
+
+echo "setting detector binning ..."
+pan appmacro set_binning 3 1
+
+echo "setting detector speed ..."
+pan appmacro speed_fast
+
+################################################################
+################################################################
+#                IODINE OBSERVATIONS
+################################################################
+################################################################
+
+echo "NOW ON TO THE IODINE EXPOSURES..."
+
+echo "Turning the Quartz lamp on..."
+lamp set QUARTZ on
+
+echo "Setting the image title..."
+pan set image.title "iodine"
+
+
+
+echo "Moving the iodine cell IN to place..."
+iodcell set iodine IN
+
+######## SLICER iodine ############
+echo "positioning slicer motor to slicer position ..."
+slicer MOVE slicer
+
+
+echo "Setting the exposure time to 2 seconds..."
+pan set exptime 2000
+
+echo "Now exposing Slicer iodine..."
+pan expose
+
+######## NARROW_SLIT iodine ############
+echo "positioning slicer motor to narrow_slit position ..."
+slicer MOVE narrow_slit
+
+
+echo "Setting the exposure time to 2 seconds..."
+pan set exptime 4000
+
+echo "Now exposing narrow_slit iodine..."
+lamp set QUARTZ on
+pan expose
+
+################################################################
+################################################################
+#                QUARTZ EXPOSURES
+################################################################
+################################################################
+
+echo "NOW ON TO THE QUARTZ EXPOSURES..."
+
+echo "Setting the image title..."
+pan set image.title "quartz"
+
+
+echo "Turning the Quartz lamp on..."
+lamp set QUARTZ on
+
+echo "Moving the iodine cell OUT of place..."
+iodcell set iodine OUT
+
+
+######## NARROW_SLIT  QUARTZ  ############
+echo "narrow_slit Quartz exposures..."
+
+echo "Setting the # Exp.to 15 ..."
+pan set obs.numreads 15
+
+echo "Setting the exposure time to 1 seconds..."
+pan set exptime 2000
+
+echo "Now exposing Narrow Quartz..."
+lamp set QUARTZ on
+pan expose
+
+
+######## SLIT  QUARTZ  ############
+echo "slit Quartz exposures..."
+
+#echo "Setting the # Exp.to 10 ..."
+#dhe set obs.numreads 10
+
+echo "Setting the exposure time to 0.5 seconds..."
+pan set exptime 1000
+
+echo "positioning slicer motor to slit position ..."
+slicer MOVE slit
+
+echo "Now exposing SLIT QUARTZ..."
+lamp set QUARTZ on
+pan expose
+
+######## FIBER  QUARTZ  ############
+echo "fiber Quartz exposures..."
+
+echo "setting detector binning ..."
+pan appmacro set_binning 4 4
+
+echo "setting detector speed ..."
+pan appmacro speed_normal
+
+#echo "Setting the # Exp.to 10 ..."
+#dhe set obs.numreads 10
+
+echo "Setting the exposure time to 0.2 seconds..."
+pan set exptime 0350
+
+echo "positioning slicer motor to fiber position ..."
+slicer MOVE fiber
+
+echo "Now exposing FIBER QUARTZ..."
+lamp set QUARTZ on
+pan expose
+
+
+echo "setting detector binning ..."
+pan appmacro set_binning 3 1
+
+echo "setting detector speed ..."
+pan appmacro speed_fast
+
+######## SLICER  QUARTZ  ############
+echo "slicer Quartz exposures..."
+
+#echo "Setting the # Exp.to 10 ..."
+#dhe set obs.numreads 10
+
+echo "Setting the exposure time to 0.5 seconds..."
+pan set exptime 1000
+
+echo "positioning slicer motor to slit position ..."
+slicer MOVE slicer
+
+echo "Now exposing SLICER QUARTZ..."
+lamp set QUARTZ on
+pan expose
+
+echo "Turning the Quartz lamp off..."
+lamp set QUARTZ off
+CHIRON2 OPTGUI GUI UPDATE autolamps on
+
+################################################################
+################################################################
+#                BIAS EXPOSURES
+################################################################
+################################################################
+
+echo "NOW ON TO THE BIAS EXPOSURES..."
+
+echo "Setting the image title..."
+pan set image.title "bias"
+
+echo "Setting observation type to bias"
+DHE set obs.obstype bias
+
+echo "Setting the exposure time to 0 seconds..."
+pan set exptime 0000
+
+######## 3 x 1 FAST BIAS  ############
+echo "3 x 1 fast bias exposures..."
+
+echo "Setting the # Exp.to 15 ..."
+pan set obs.numreads 15
+
+echo "Now exposing 3 x 1 fast bias..."
+pan expose
+
+######## 4 x 4 NORMAL BIAS  ############
+echo "4 x 4 normal bias exposures..."
+
+echo "setting detector binning ..."
+pan appmacro set_binning 4 4
+
+echo "setting detector speed ..."
+pan appmacro speed_normal
+
+echo "Now exposing 4 x 4 normal bias..."
+pan expose
+
+echo "setting detector binning ..."
+pan appmacro set_binning 3 1
+
+echo "setting detector speed ..."
+pan appmacro speed_fast
+
+################################################################
+################################################################
+#                DARK EXPOSURES
+################################################################
+################################################################
+
+echo "NOW ON TO THE DARK EXPOSURES..."
+
+echo "Setting the image title..."
+pan set image.title "dark"
+
+echo "Setting observation type to bias"
+DHE set obs.obstype dark
+
+######## 3 x 1 FAST 90 sec BIAS  ############
+echo "Setting the exposure time to 90 seconds..."
+pan set exptime 90000
+
+echo "3 x 1 fast dark exposures..."
+
+echo "Setting the # Exp.to 5 ..."
+pan set obs.numreads 5
+
+echo "Now exposing 3 x 1 fast darks..."
+pan expose
+
+######## 3 x 1 FAST 30 sec BIAS  ############
+echo "Setting the exposure time to 30 seconds..."
+pan set exptime 30000
+
+echo "3 x 1 fast dark exposures..."
+
+echo "Setting the # Exp.to 5 ..."
+pan set obs.numreads 5
+
+echo "Now exposing 3 x 1 fast darks..."
+pan expose
+
+######## 3 x 1 FAST 37 sec BIAS  ############
+echo "Setting the exposure time to 37 seconds..."
+pan set exptime 37000
+
+echo "3 x 1 fast dark exposures..."
+
+echo "Setting the # Exp.to 5 ..."
+pan set obs.numreads 5
+
+echo "Now exposing 3 x 1 fast darks..."
+pan expose
+
+######## 3 x 1 FAST 12 sec BIAS  ############
+echo "Setting the exposure time to 12 seconds..."
+pan set exptime 12000
+
+echo "3 x 1 fast dark exposures..."
+
+echo "Setting the # Exp.to 5 ..."
+pan set obs.numreads 5
+
+echo "Now exposing 3 x 1 fast darks..."
+pan expose
+
+################################################################
+################################################################
+################################################################
+################################################################
+#            REPEAT ALL FOR 1 X 1 BINNING FOR TESTING
+################################################################
+################################################################
+################################################################
+################################################################
+
+
+
+echo "setting detector binning ..."
+pan appmacro set_binning 1 1
+
+
+################################################################
+################################################################
+#                THORIUM ARGON
+################################################################
+################################################################
+
+echo "Turning the ThAr lamp on..."
+lamp set TH-AR on
+
+echo "Setting the exposure time to 1 seconds..."
+pan set exptime 1000
+pan dhe async GUIUPDATE exptime
+
+sleep 2
+
+echo "Setting the image title..."
+pan set image.title "ThAr"
+pan dhe async GUIUPDATE title
+
+sleep 2
+
+echo "Setting the base name..."
+pan set image.basename $chi_base
+pan dhe async GUIUPDATE basename
+
+sleep 2
+
+#echo "Setting the image number..."
+#set obs_start = `pan get image.number`
+#pan set image.number $obs_start
+#pan dhe async GUIUPDATE imnumber
+
+#sleep 2
+
+echo "Setting the # Exp. ..."
+pan set obs.nimages 1
+pan dhe async GUIUPDATE nimages
+
+sleep 2
+
+echo "Now setting the observer"
+set observer  = `pan get obs.observer`
+echo "The observer is: "
+echo $observer
+
+#if ($observer == "_NONE_") then 
+#   echo "Setting the Observer ... "
+#   pan set obs.observer calib_beg
+#   pan dhe async GUIUPDATE observer
+#endif
+
+echo "Now waiting one moment"
+sleep 2
+
+
+echo "Setting the observation type..."
+pan set obs.obstype Calibration
+pan dhe async GUIUPDATE obstype
+sleep 1
+
+pan set image.comment " "
+pan dhe async GUIUPDATE comment
+sleep 2
+
+pan dbs set propid Calib11 STR
+pan dhe async GUIUPDATE propid
+
+sleep 2
+#sleep 1
+#pan dhe async GUIUPDATE obstype Calibration
+
+echo "Setting autowrite to disk on..."
+#pan set autowrite on
+
+echo "Setting autoshutter on..."
+pan set autoshutter on
+
+echo "Setting the image directory..."
+pan set image.directory $chi_dir
+pan set image.dir $chi_dir
+pan dhe async GUIUPDATE directory
+pan dhe async GUIUPDATE dir
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode Calib. STR
+
+echo "updating the GUI..."
+pan dhe async GUIUPDATE geometry
+
+
+echo "Now exposing Narrow_slit ThAr..."
+pan expose
+
+
+######## SLIT Th-Ar ############
+echo "positioning slicer motor to slit position ..."
+slicer MOVE slit
+
+echo "Setting the exposure time to 0.5 seconds..."
+pan set exptime 0500
+
+echo "Now exposing Slit ThAr..."
+lamp set TH-AR on
+pan expose
+
+######## SLICER Th-Ar ############
+echo "positioning slicer motor to slicer position ..."
+slicer MOVE slicer
+
+#This is the same as the previous exposure:
+#echo "Setting the exposure time to 2 seconds..."
+#dhe set exptime 1000
+
+echo "Now exposing Slicer ThAr..."
+lamp set TH-AR on
+pan expose
+
+######## Fiber Th-Ar ############
+echo "positioning slicer motor to fiber position ..."
+slicer MOVE fiber
+
+echo "Setting the exposure time to 0.25 seconds..."
+pan set exptime 0250
+
+echo "Now exposing Fiber ThAr..."
+lamp set TH-AR on
+pan expose
+
+echo "Turning the ThAr lamp off..."
+lamp set TH-AR off
+
+################################################################
+################################################################
+#                IODINE OBSERVATIONS
+################################################################
+################################################################
+
+echo "NOW ON TO THE IODINE EXPOSURES..."
+
+echo "Turning the Quartz lamp on..."
+lamp set QUARTZ on
+
+echo "Setting the image title..."
+pan set image.title "iodine"
+
+
+
+echo "Moving the iodine cell IN to place..."
+iodcell set iodine IN
+
+######## SLICER iodine ############
+echo "positioning slicer motor to slicer position ..."
+slicer MOVE slicer
+
+
+echo "Setting the exposure time to 2 seconds..."
+pan set exptime 2000
+
+echo "Now exposing Slicer iodine..."
+pan expose
+
+######## NARROW_SLIT iodine ############
+echo "positioning slicer motor to narrow_slit position ..."
+slicer MOVE narrow_slit
+
+
+echo "Setting the exposure time to 2 seconds..."
+pan set exptime 4000
+
+echo "Now exposing narrow_slit iodine..."
+lamp set QUARTZ on
+pan expose
+
+################################################################
+################################################################
+#                QUARTZ EXPOSURES
+################################################################
+################################################################
+
+echo "NOW ON TO THE QUARTZ EXPOSURES..."
+
+echo "Setting the image title..."
+pan set image.title "quartz"
+
+
+echo "Turning the Quartz lamp on..."
+lamp set QUARTZ on
+
+echo "Moving the iodine cell OUT of place..."
+iodcell set iodine OUT
+
+
+######## NARROW_SLIT  QUARTZ  ############
+echo "narrow_slit Quartz exposures..."
+
+echo "Setting the # Exp.to 15 ..."
+pan set obs.numreads 15
+
+echo "Setting the exposure time to 1 seconds..."
+pan set exptime 2000
+
+echo "Now exposing Narrow Quartz..."
+lamp set QUARTZ on
+pan expose
+
+
+######## SLIT  QUARTZ  ############
+echo "slit Quartz exposures..."
+
+#echo "Setting the # Exp.to 10 ..."
+#dhe set obs.numreads 10
+
+echo "Setting the exposure time to 0.5 seconds..."
+pan set exptime 1000
+
+echo "positioning slicer motor to slit position ..."
+slicer MOVE slit
+
+echo "Now exposing SLIT QUARTZ..."
+lamp set QUARTZ on
+pan expose
+
+######## FIBER  QUARTZ  ############
+echo "fiber Quartz exposures..."
+
+echo "Setting the exposure time to 0.35 seconds..."
+pan set exptime 0350
+
+echo "positioning slicer motor to fiber position ..."
+slicer MOVE fiber
+
+echo "Now exposing FIBER QUARTZ..."
+lamp set QUARTZ on
+pan expose
+
+######## SLICER  QUARTZ  ############
+echo "slicer Quartz exposures..."
+
+#echo "Setting the # Exp.to 10 ..."
+#dhe set obs.numreads 10
+
+echo "Setting the exposure time to 1 seconds..."
+pan set exptime 1000
+
+echo "positioning slicer motor to slit position ..."
+slicer MOVE slicer
+
+echo "Now exposing SLICER QUARTZ..."
+lamp set QUARTZ on
+pan expose
+
+echo "Turning the Quartz lamp off..."
+lamp set QUARTZ off
+CHIRON2 OPTGUI GUI UPDATE autolamps on
+
+################################################################
+################################################################
+#                BIAS EXPOSURES
+################################################################
+################################################################
+
+echo "NOW ON TO THE BIAS EXPOSURES..."
+
+echo "Setting the image title..."
+pan set image.title "bias"
+
+echo "Setting observation type to bias"
+DHE set obs.obstype bias
+
+echo "Setting the exposure time to 0 seconds..."
+pan set exptime 0000
+
+######## 3 x 1 FAST BIAS  ############
+echo "3 x 1 fast bias exposures..."
+
+echo "Setting the # Exp.to 15 ..."
+pan set obs.numreads 15
+
+echo "Now exposing 3 x 1 fast bias..."
+pan expose
+
+######## 4 x 4 NORMAL BIAS  ############
+echo "1 x 1 normal bias exposures..."
+
+echo "setting detector speed ..."
+pan appmacro speed_normal
+
+echo "Now exposing 1 x 1 normal bias..."
+pan expose
+
+echo "setting detector speed ..."
+pan appmacro speed_fast
+
+################################################################
+################################################################
+#                DARK EXPOSURES
+################################################################
+################################################################
+
+echo "NOW ON TO THE DARK EXPOSURES..."
+
+echo "Setting the image title..."
+pan set image.title "dark"
+
+echo "Setting observation type to bias"
+DHE set obs.obstype dark
+
+######## 1 x 1 FAST 90 sec BIAS  ############
+echo "Setting the exposure time to 90 seconds..."
+pan set exptime 90000
+
+echo "1 x 1 fast dark exposures..."
+
+echo "Setting the # Exp.to 5 ..."
+pan set obs.numreads 5
+
+echo "Now exposing 1 x 1 fast darks..."
+pan expose
+
+######## 1 x 1 FAST 30 sec BIAS  ############
+echo "Setting the exposure time to 30 seconds..."
+pan set exptime 30000
+
+echo "1 x 1 fast dark exposures..."
+
+echo "Setting the # Exp.to 5 ..."
+pan set obs.numreads 5
+
+echo "Now exposing 1 x 1 fast darks..."
+pan expose
+
+######## 1 x 1 FAST 37 sec BIAS  ############
+echo "Setting the exposure time to 37 seconds..."
+pan set exptime 37000
+
+echo "1 x 1 fast dark exposures..."
+
+echo "Setting the # Exp.to 5 ..."
+pan set obs.numreads 5
+
+echo "Now exposing 1 x 1 fast darks..."
+pan expose
+
+######## 1 x 1 FAST 12 sec BIAS  ############
+echo "Setting the exposure time to 12 seconds..."
+pan set exptime 12000
+
+echo "1 x 1 fast dark exposures..."
+
+echo "Setting the # Exp.to 5 ..."
+pan set obs.numreads 5
+
+echo "Now exposing 1 x 1 fast darks..."
+pan expose
+
+
+################################################################
+################################################################
+#    CREATE DIRECTORIES AND SYNC CALIBRATION EXPOSURES
+################################################################
+################################################################
+
+echo "Creating the directory on ctimac1..."
+ssh ctimac1 mkdir /mir7/raw/$chi_date
+
+echo "Now syncing the data to ctimac1..."
+#rsync -zuva $chi_dir/ ctimac1:/mir7/raw/$chi_date/
+#be nicer to the heartbeat
+nice +2 rsync -zuva $chi_dir/ ctimac1:/mir7/raw/$chi_date/
+
+################################################################
+################################################################
+#    FINALLY CHANGE TO THE NARROW_I2 SETTINGS
+################################################################
+################################################################
+
+echo "setting detector binning ..."
+pan appmacro set_binning 3 1
+
+echo "setting detector speed ..."
+pan appmacro speed_fast
+
+slicer MOVE narrow_slit
+set pos = `CHIRON2 IODCELL get iodine`
+        iodcell set iodine IN
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode Narrow_i2 STR
+pan dhe async GUIUPDATE geometry Narrow_i2
+
+echo "Finished Calibrations Script"
+
+echo "logmaker, '"$chi_date"', /over" | ssh -tY ctimac1 "cd /mir7/pro ; idl"
+
+echo "Logsheet created"
+
+echo "Ending BoN Calibration script..."
+date
+
