@@ -3,35 +3,35 @@
 echo "Initiating Calibration script..."
 date
 
-set qtz11nr = `exp_times qtz11nr`
-set qtz11st =  `exp_times qtz11st`
-set qtz11sc =  `exp_times qtz11sc`
-set qtz11fb =  `exp_times qtz11fb`
+set qtz11nr = 56000
+set qtz11st = 26000
+set qtz11sc = 19000
+set qtz11fb = 1200
 
-set qtz31nr =  `exp_times qtz31nr`
-    set qtz31st = `exp_times qtz31st`
-    set qtz31sc = `exp_times qtz31sc`
-    set qtz44fb = `exp_times qtz44fb`
+set qtz31nr = 56000
+set qtz31st = 26000
+set qtz31sc = 19000
+set qtz44fb = 1200
 
-set thar11nr = `exp_times thar11nr`
-set thar11st = `exp_times thar11st`
-set thar11sc = `exp_times thar11sc`
-set thar11fb = `exp_times thar11fb`
+set thar11nr = 800
+set thar11st = 400
+set thar11sc = 400
+set thar11fb = 190
 
-set thar31nr = `exp_times thar31nr`
-set thar31st = `exp_times thar31st`
-set thar31sc = `exp_times thar31sc`
-set thar44fb = `exp_times thar44fb`
+set thar31nr = 800
+set thar31st = 400
+set thar31sc = 400
+set thar44fb = 190
 
-set iod11nr = `exp_times iod11nr`
-set iod11st = `exp_times iod11st`
-set iod11sc = `exp_times iod11sc`
-set iod11fb = `exp_times iod11fb`
+set iod11nr = 66000
+set iod11st = 30000
+set iod11sc = 21000
+set iod11fb = 1390
 
-set iod31nr = `exp_times iod31nr`
-set iod31st = `exp_times iod31st`
-set iod31sc = `exp_times iod31sc`
-set iod44fb = `exp_times iod44fb`
+set iod31nr = 66000
+set iod31st = 30000
+set iod31sc = 21000
+set iod44fb = 1390
 
 echo "Turning early termination off..."
 CHIRON EXPM SEND THRESHOLD -1 1000 2
@@ -62,11 +62,10 @@ echo "chi_date is: "
 echo $chi_date
 
 
-set chi_dir = /data/$chi_date
+set chi_dir = /data/junk
 echo "chi_dir is: "
 echo $chi_dir
 
-mkdir $chi_dir
 
 echo "Retrieving the Basename from the CHIRON GUI..."
 set chi_base = `pan get image.basename`
@@ -314,7 +313,7 @@ iodcell set iodine OUT
 ######## NARROW_SLIT  QUARTZ  ############
 echo "narrow_slit Quartz exposures..."
 
-echo "Setting the # Exp.to 10 ..."
+echo "Setting the # Exp.to 15 ..."
 pan set obs.numreads 10
 
 echo "Setting the exposure time to 1 seconds..."
@@ -377,8 +376,8 @@ pan appmacro speed_normal
 ######## SLICER  QUARTZ  ############
 echo "slicer Quartz exposures..."
 
-echo "Setting the # Exp.to 15 ..."
-pan set obs.numreads 15
+#echo "Setting the # Exp.to 10 ..."
+#dhe set obs.numreads 10
 
 echo "Setting the exposure time to 0.5 seconds..."
 pan set exptime $qtz31sc
@@ -770,21 +769,6 @@ echo "Now exposing 1 x 1 fast darks..."
 pan expose
 
 ################################################################
-################################################################
-#    CREATE DIRECTORIES AND SYNC CALIBRATION EXPOSURES
-################################################################
-################################################################
-
-echo "Creating the directory on ctimac1..."
-ssh ctimac1 mkdir /mir7/raw/$chi_date
-
-echo "Now syncing the data to ctimac1..."
-#rsync -zuva $chi_dir/ ctimac1:/mir7/raw/$chi_date/
-#be nicer to the heartbeat
-nice +2 rsync -zuva $chi_dir/ ctimac1:/mir7/raw/$chi_date/
-
-################################################################
-################################################################
 #    FINALLY CHANGE TO THE NARROW_I2 SETTINGS
 ################################################################
 ################################################################
@@ -805,13 +789,3 @@ pan dbs set geom_mode Narrow_i2 STR
 GUIUPDATE geometry Narrow_i2
 
 echo "Finished Calibrations Script"
-
-echo "logmaker, '"$chi_date"', /over" | ssh -tY ctimac1 "cd /mir7/pro ; idl"
-
-echo "Logsheet created"
-
-#echo "Now syncing over the temperature and pressure logs..."
-#scp /home/observer/apps/CHIRTEMP/log/insttemp.log ctimac1:/mir7/logs/temps/dettemp/insttemp$chi_date.log
-#scp /home/observer/apps/CHIRTEMP/log/heater.log ctimac1:/mir7/logs/temps/heater/heater$chi_date.log
-#scp /home/observer/apps/CHIRTEMP/log/dewpress.log ctimac1:/mir7/logs/pressures/dewpress/dewpress$chi_date.log
-#scp /home/observer/apps/CHIRTEMP/log/dettemp.log ctimac1:/mir7/logs/temps/dettemp/dettemp$chi_date.log

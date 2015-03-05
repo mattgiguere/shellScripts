@@ -1,11 +1,11 @@
 #!/bin/csh -f
 
 echo "Setting observation name: "
-pan set image.title "Quick Test"
+#pan set image.title "Quick Test"
 
 echo "Use this preset mode if you've changed a setting"
 echo "and want to quickly reissue the preset mode that"
 echo "was in place before you changed something."
 
 pan dbs set geom_mode Quick STR
-pan dhe async GUIUPDATE geometry Quick
+GUIUPDATE geometry Quick

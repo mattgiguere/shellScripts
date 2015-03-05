@@ -314,7 +314,7 @@ iodcell set iodine OUT
 ######## NARROW_SLIT  QUARTZ  ############
 echo "narrow_slit Quartz exposures..."
 
-echo "Setting the # Exp.to 10 ..."
+echo "Setting the # Exp.to 15 ..."
 pan set obs.numreads 10
 
 echo "Setting the exposure time to 1 seconds..."
@@ -377,8 +377,8 @@ pan appmacro speed_normal
 ######## SLICER  QUARTZ  ############
 echo "slicer Quartz exposures..."
 
-echo "Setting the # Exp.to 15 ..."
-pan set obs.numreads 15
+#echo "Setting the # Exp.to 10 ..."
+#dhe set obs.numreads 10
 
 echo "Setting the exposure time to 0.5 seconds..."
 pan set exptime $qtz31sc
@@ -769,19 +769,6 @@ pan set obs.numreads 5
 echo "Now exposing 1 x 1 fast darks..."
 pan expose
 
-################################################################
-################################################################
-#    CREATE DIRECTORIES AND SYNC CALIBRATION EXPOSURES
-################################################################
-################################################################
-
-echo "Creating the directory on ctimac1..."
-ssh ctimac1 mkdir /mir7/raw/$chi_date
-
-echo "Now syncing the data to ctimac1..."
-#rsync -zuva $chi_dir/ ctimac1:/mir7/raw/$chi_date/
-#be nicer to the heartbeat
-nice +2 rsync -zuva $chi_dir/ ctimac1:/mir7/raw/$chi_date/
 
 ################################################################
 ################################################################
@@ -805,13 +792,3 @@ pan dbs set geom_mode Narrow_i2 STR
 GUIUPDATE geometry Narrow_i2
 
 echo "Finished Calibrations Script"
-
-echo "logmaker, '"$chi_date"', /over" | ssh -tY ctimac1 "cd /mir7/pro ; idl"
-
-echo "Logsheet created"
-
-#echo "Now syncing over the temperature and pressure logs..."
-#scp /home/observer/apps/CHIRTEMP/log/insttemp.log ctimac1:/mir7/logs/temps/dettemp/insttemp$chi_date.log
-#scp /home/observer/apps/CHIRTEMP/log/heater.log ctimac1:/mir7/logs/temps/heater/heater$chi_date.log
-#scp /home/observer/apps/CHIRTEMP/log/dewpress.log ctimac1:/mir7/logs/pressures/dewpress/dewpress$chi_date.log
-#scp /home/observer/apps/CHIRTEMP/log/dettemp.log ctimac1:/mir7/logs/temps/dettemp/dettemp$chi_date.log

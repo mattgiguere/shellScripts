@@ -1,0 +1,75 @@
+#!/bin/csh -f 
+
+set qtz31st = `exp_times qtz31st`
+
+echo "Testing Exposure Meter Socket Connection..."
+date
+
+echo "setting detetcor binning ..."
+pan appmacro set_binning 3 1
+
+echo "positioning slicer motor to slit position ..."
+slicer MOVE slit
+
+set pos = `iodcell get iodine`
+if ("$pos[2]" == "OFF" || "$pos[2]" == "OUT") then
+        echo "iodine cell already OUT"
+else
+        echo "moving iodine cell OUT ..."
+        iodcell set iodine OUT
+endif
+
+#set it so the GUI does not automatically turn the lamps off                 
+#after the end of the sequence                                                   
+CHIRON2 OPTGUI GUI UPDATE autolamps off
+
+################################################################
+################################################################          
+#                EXPOSURE METER QUARTZ TEST
+################################################################                 
+################################################################                      
+
+echo "Turning the Quartz lamp on..."
+lamp set QUARTZ on
+
+echo "Setting the exposure time to 4 seconds..."
+set expmexptm = 10000
+pan set exptime $expmexptm
+GUIUPDATE exptime
+
+echo "Setting the exposure meter set point..."
+CHIRON EXPM SEND THRESHOLD 1.1e6 $expmexptm 1
+GUIUPDATE EXPM
+
+echo "Setting the image title..."
+pan set image.title "ExpmTest"
+GUIUPDATE title
+
+echo "Setting the # Exp. ..."
+pan set obs.numreads 1
+GUIUPDATE nimages
+
+echo "Setting the observation type..."
+pan set obs.obstype "Calibration"
+
+echo "Setting autoshutter on..."
+pan set autoshutter on
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode lamp_check STR
+
+echo "updating the GUI..."
+GUIUPDATE geometry
+
+echo "Now exposing Slit Quartz..."
+pan expose
+
+echo "Turning the Quartz lamp off.."
+lamp set QUARTZ off
+
+echo "Removing image comment..."
+pan set image.comment ""
+GUIUPDATE comment
+
+echo "Now unlocking the GUI..."
+GUIUPDATE UNLOCK

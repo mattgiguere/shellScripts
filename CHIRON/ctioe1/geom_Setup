@@ -1,0 +1,162 @@
+#!/bin/csh -f 
+
+#Make sure shutter isn't open
+pan set shutter close
+
+#EXPOSURE VARIABLE:
+set thar31nr = 800
+
+GUIUPDATE LOCK
+echo "Initiating Lamp Check Script..."
+date
+
+echo "setting detector size ..."
+pan appmacro set_roi FULL
+
+echo "setting detector binning ..."
+pan appmacro set_binning 3 1
+
+echo "setting detector speed ..."
+#pan appmacro speed_fast
+pan appmacro speed_normal
+
+echo "positioning slicer motor to narrow_slit position ..."
+slicer MOVE narrow_slit
+
+pan dbs set propid Calib STR
+GUIUPDATE propid
+
+sleep 2
+
+set pos = `iodcell get iodine`
+if ("$pos[2]" == "OFF" || "$pos[2]" == "OUT") then
+        echo "iodine cell already OUT"
+else
+        echo "moving iodine cell OUT ..."
+        iodcell set iodine OUT
+endif
+
+set chi_hour = `date "+%H"`
+#set chi_hour = 17
+
+if ($chi_hour <= "9") then
+set chi_date = `date -d yesterday "+%y%m%d"`
+echo "Entering 1st. The chi_hour is: "$chi_hour
+else
+set chi_date = `date "+%y%m%d"`
+pan set image.number 1000
+GUIUPDATE imnumber
+echo "Entering 2nd. The chi_hour is: "$chi_hour
+sleep 2
+endif
+
+
+echo "chi_date is: "                                  
+echo $chi_date      
+
+set chi_dir = '/data/'$chi_date
+echo "chi_dir is: "
+echo $chi_dir
+
+mkdir $chi_dir
+
+echo "Setting the Basename..."
+pan set image.basename 'chi'$chi_date'.'
+GUIUPDATE basename
+echo "Retrieving the Basename from the CHIRON GUI..."
+set chi_base = `pan get image.basename`
+echo "The Basename is: "
+echo $chi_base
+
+sleep 2
+
+
+echo "Retrieving the Starting Sequence # from the CHIRON GUI..."
+set obs_start = `pan get image.number`
+echo "The starting Observation # is: "
+echo $obs_start
+
+
+echo "Setting the proposal ID..."
+pan dbs set propid CPS
+GUIUPDATE propid
+
+
+#set it so the GUI does not automatically turn the lamps off                 
+#after the end of the sequence                                                   
+CHIRON2 OPTGUI GUI UPDATE autolamps off
+
+################################################################
+################################################################          
+#                THORIUM ARGON              
+################################################################                 
+################################################################                      
+
+echo "Setting the observation type..."
+pan set obs.obstype "Calibration"
+GUIUPDATE obstype "Calibration"
+
+echo "Turning the ThAr lamp on..."
+lamp set TH-AR on
+
+echo "Setting the image title..."
+pan set image.title "ThAr"
+GUIUPDATE title
+
+echo "Setting image comment..."
+pan set image.comment "lamp check "
+GUIUPDATE comment
+
+echo "Setting the base name..."
+pan set image.basename $chi_base
+GUIUPDATE basename
+
+echo "Setting the image number..."
+pan set image.number $obs_start
+GUIUPDATE imnumber
+
+echo "Setting the # Exp. ..."
+pan set obs.numreads 1
+GUIUPDATE nimages
+
+sleep 2
+echo "Setting the exposure time to 1 seconds..."
+pan set exptime $thar31nr
+GUIUPDATE exptime
+
+echo "Setting autoshutter on..."
+pan set autoshutter on
+
+echo "Setting the image directory..."
+pan set image.directory $chi_dir
+pan set image.dir $chi_dir
+GUIUPDATE directory
+#GUIUPDATE dir
+sleep 2
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode Setup STR
+
+echo "updating the GUI..."
+GUIUPDATE geometry
+
+sleep 2
+
+echo "Now exposing Narrow_slit ThAr..."
+pan expose
+
+echo "Turning the ThAr lamp off.."
+lamp set TH-AR off
+
+echo "Removing image comment..."
+pan set image.comment ""
+GUIUPDATE comment
+
+echo "Now configuring for the nightly observations..."
+
+echo "setting detector binning ..."
+pan appmacro set_binning 3 1
+
+#echo "setting detector speed ..."
+#pan appmacro speed_fast
+GUIUPDATE UNLOCK

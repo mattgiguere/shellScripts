@@ -1,0 +1,137 @@
+#!/bin/csh -f
+
+set qtz11nr = `exp_times qtz11nr`
+set qtz11st =  `exp_times qtz11st`
+set qtz11sc =  `exp_times qtz11sc`
+set qtz11fb =  `exp_times qtz11fb`
+
+set qtz31nr =  `exp_times qtz31nr`
+set qtz31st = `exp_times qtz31st`
+set qtz31sc = `exp_times qtz31sc`
+set qtz44fb = `exp_times qtz44fb`
+
+set thar11nr = `exp_times thar11nr`
+set thar11st = `exp_times thar11st`
+set thar11sc = `exp_times thar11sc`
+set thar11fb = `exp_times thar11fb`
+
+set thar31nr = `exp_times thar31nr`
+set thar31st = `exp_times thar31st`
+set thar31sc = `exp_times thar31sc`
+set thar44fb = `exp_times thar44fb`
+
+set iod11nr = `exp_times iod11nr`
+set iod11st = `exp_times iod11st`
+set iod11sc = `exp_times iod11sc`
+set iod11fb = `exp_times iod11fb`
+
+set iod31nr = `exp_times iod31nr`
+set iod31st = `exp_times iod31st`
+set iod31sc = `exp_times iod31sc`
+set iod44fb = `exp_times iod44fb`
+
+echo "Now taking a Quartz with I2 exposure..."
+
+date
+
+echo "Turning off autolamps update..."
+CHIRON2 OPTGUI GUI update autolamps off
+
+echo "setting detetcor size ..."
+pan appmacro set_roi FULL
+
+echo "setting detetcor binning ..."
+pan appmacro set_binning 4 4
+
+echo "setting detetcor speed ..."
+#pan appmacro speed_fast
+pan appmacro speed_normal
+
+echo "positioning slicer motor to fiber position ..."
+slicer MOVE fiber
+
+pan set image.comment " "
+GUIUPDATE comment
+sleep 2
+
+#pan dbs set propid CPS STR
+#GUIUPDATE propid
+
+sleep 2
+
+echo "Retrieving the Directory from the CHIRON GUI..."
+set chi_dir = `pan get image.directory`
+echo "The directory name is: "
+echo $chi_dir
+
+echo "Retrieving the Basename from the CHIRON GUI..."
+set chi_base = `pan get image.basename`
+echo "The Basename is: "
+echo $chi_base
+
+echo "Retrieving the Starting Sequence # from the CHIRON GUI..."
+set obs_start = `pan get image.number`
+echo "The starting Observation # is: "
+echo $obs_start
+
+echo "Setting the base name..."
+pan set image.basename $chi_base
+
+echo "Setting the image number..."
+pan set image.number $obs_start
+
+echo "Setting the image directory..."
+pan set image.directory $chi_dir
+
+echo "Setting the # Exp. ..."
+pan set obs.numreads 3
+
+echo "Setting the observation type..."
+pan set obs.obstype "Calibration"
+GUIUPDATE obstype CALIBRATION
+sleep 2
+echo "Setting autoshutter on..."
+pan set autoshutter on
+
+echo "setting geometry mode ..."
+pan dbs set geom_mode Quartz_i2_Fiber STR
+
+echo "updating the GUI..."
+GUIUPDATE geometry Quartz_i2_Fiber
+
+echo "Turning the Quartz lamp on..."
+lamp set QUARTZ on
+
+echo "Setting the image title..."
+pan set image.title "iodine"
+
+
+set pos = `iodcell get iodine`
+if ("$pos[2]" == "ON" || "$pos[2]" == "IN") then
+        echo "iodine cell already IN"
+else
+        echo "moving iodine cell IN ..."
+        iodcell set iodine IN
+endif
+
+######## NARROW iodine ############                                                       
+echo "Now taking the fiber iodine..."
+
+echo "Setting the exposure time..."
+pan set exptime $iod44fb
+
+echo "Now exposing fiber iodine..."
+pan expose
+
+echo "Turning the Quartz lamp off..."
+lamp set QUARTZ off
+
+echo "The SCRIPT IS COMPLETE!!"
+sleep 3
+
+
+
+echo "Now setting the GUI to Slicer_i2 mode..."
+pan dbs set geom_mode Fiber STR
+GUIUPDATE geometry Fiber
+GUIUPDATE UNLOCK

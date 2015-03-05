@@ -1,0 +1,129 @@
+#!/bin/csh -f
+
+#############################################################
+### MODIFY EXPOSURE TIMES HERE ###
+#############################################################
+
+### 1. QUARTZ BINNED EXPOSURE TIMES ###
+set qtz31nr = 40000
+set qtz31st = 19000
+set qtz31sc = 14000
+set qtz44fb = 800
+
+### 2. QUARTZ 1X1 EXPOSURE TIMES ###
+set qtz11nr = $qtz31nr
+set qtz11st = $qtz31st
+set qtz11sc = $qtz31sc
+set qtz11fb = $qtz44fb
+
+### 3. THAR 1X1 EXPOSURE TIMES ###
+set thar11nr = 800
+set thar11st = 400
+set thar11sc = 400
+set thar11fb = 190
+
+### 4. THAR BINNED EXPOSURE TIMES ###
+set thar31nr = 800
+set thar31st = 400
+set thar31sc = 400
+set thar44fb = 190
+
+### 5. IODINE 1X1 EXPOSURE TIMES ###
+set iod11nr = `expr $qtz11nr + $qtz11nr / 5`
+set iod11st = `expr $qtz11st + $qtz11st / 5`
+set iod11sc = `expr $qtz11sc + $qtz11sc / 5`
+set iod11fb = `expr $qtz11fb + $qtz11fb / 5`
+
+### 6. IODINE BINNED EXPOSURE TIMES ###
+set iod31nr = `expr $qtz31nr + $qtz31nr / 5`
+set iod31st = `expr $qtz31st + $qtz31st / 5`
+set iod31sc = `expr $qtz31sc + $qtz31sc / 5`
+set iod44fb = `expr $qtz44fb + $qtz44fb / 5`
+
+#############################################################
+### DO NOT MODIFY ANYTHING BELOW HERE ###
+#############################################################
+
+###1. QUARTZ 1X1 ECHOES###
+if ($1 == 'qtz11nr') then
+echo $qtz11nr
+endif
+if ($1 == 'qtz11st') then
+echo $qtz11st
+endif
+if ($1 == 'qtz11sc') then
+echo $qtz11sc
+endif
+if ($1 == 'qtz11fb') then
+echo $qtz11fb
+endif
+
+###2. QUARTZ BINNED ECHOES###
+if ($1 == 'qtz31nr') then
+echo $qtz31nr
+endif
+if ($1 == 'qtz31st') then
+echo $qtz31st
+endif
+if ($1 == 'qtz31sc') then
+echo $qtz31sc
+endif
+if ($1 == 'qtz44fb') then
+echo $qtz44fb
+endif
+
+###3. THAR 1X1 ECHOES###
+if ($1 == 'thar11nr') then
+echo $thar11nr
+endif
+if ($1 == 'thar11st') then
+echo $thar11st
+endif
+if ($1 == 'thar11sc') then
+echo $thar11sc
+endif
+if ($1 == 'thar11fb') then
+echo $thar11fb
+endif
+
+###4. THAR BINNED ECHOES###
+if ($1 == 'thar31nr') then
+echo $thar31nr
+endif
+if ($1 == 'thar31st') then
+echo $thar31st
+endif
+if ($1 == 'thar31sc') then
+echo $thar31sc
+endif
+if ($1 == 'thar44fb') then
+echo $thar44fb
+endif
+
+###5. IODINE 1X1 ECHOES###
+if ($1 == 'iod11nr') then
+echo $iod11nr
+endif
+if ($1 == 'iod11st') then
+echo $iod11st
+endif
+if ($1 == 'iod11sc') then
+echo $iod11sc
+endif
+if ($1 == 'iod11fb') then
+echo $iod11fb
+endif
+
+###6. IODINE BINNED ECHOES###
+if ($1 == 'iod31nr') then
+echo $iod31nr
+endif
+if ($1 == 'iod31st') then
+echo $iod31st
+endif
+if ($1 == 'iod31sc') then
+echo $iod31sc
+endif
+if ($1 == 'iod44fb') then
+echo $iod44fb
+endif

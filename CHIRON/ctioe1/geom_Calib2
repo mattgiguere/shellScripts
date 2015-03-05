@@ -1,8 +1,20 @@
 #!/bin/csh -f
 
+echo "checking running processes ..."
+set tmpfile = "/tmp/calibchk2.list"
+rm -f $tmpfile
+ps awx > $tmpfile
+set procid = ""
+set procid  = $procid" "`egrep calib_end $tmpfile | awk '{print $1}'`
+echo $procid
+if ($procid >1 ) then
+        echo "another geom_Calib is already running. NOT started"
+        exit -1
+endif
+
 echo "Now running the calibrations..."
 
-set chi_date = `ssh ctimac1 date -v -1d "+%y%m%d"`
+set chi_date = `date -d yesterday "+%y%m%d"`
 echo $chi_date
 set log = ~/apps/CHIRON/bin/calib_logs/${chi_date}_end.log
 start_viewlog $log

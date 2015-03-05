@@ -1,0 +1,19 @@
+#!/bin/csh
+
+#The new way of doing things. Operator clicks start button.
+set statofimline = `pan get progress | grep state | cut -d"=" -f2`
+echo "statofimline is: "$statofimline
+
+while ( $statofimline != "exposing" )
+   echo "Waiting for 1st exposure of 3 to start. Currently "$statofimline
+   sleep 3
+   set statofimline = `pan get progress | grep state | cut -d"=" -f2`
+end
+
+set statofimline = `pan get progress | grep state | cut -d"=" -f2`
+while ( $statofimline != "idle" )
+   echo "Waiting for 1st exposure of 3 to finish. Currently "$statofimline
+   sleep 3
+   set statofimline = `pan get progress | grep state | cut -d"=" -f2`
+end
+

@@ -1,13 +1,13 @@
 #!/bin/csh -f
 
 echo "checking running processes ..."
-set tmpfile = "/tmp/calibchk1.list"
+set tmpfile = "/tmp/calibchk.list"
 rm -f $tmpfile
 ps awx > $tmpfile
 set procid = ""
-set procid  = $procid" "`egrep calib_beg $tmpfile | awk '{print $1}'`
+set procid  = $procid" "`egrep geom_Calib $tmpfile | awk '{print $1}'`
 echo $procid
-if ($procid >1 ) then
+if ($#procid >1 ) then
         echo "another geom_Calib is already running. NOT started"
         exit -1
 endif
@@ -28,13 +28,13 @@ endif
 set log = ~/apps/CHIRON/bin/calib_logs/${chi_date}_beg.log
 GUIUPDATE LOCK
 start_viewlog $log
-calib_beg >> $log
+#calib_beg >> $log
+sleep 10
 GUIUPDATE UNLOCK
 
 echo "logged some output"
 
 echo Output saved to ${chi_date}_beg.log
 
-ssh ctimac1 mail -s "Log_for_Calibrations_"${chi_date}_beg.log matthew.giguere@gmail.com <  ~/apps/CHIRON/bin/calib_logs/${chi_date}_beg.log
 
 kill_viewlog $log

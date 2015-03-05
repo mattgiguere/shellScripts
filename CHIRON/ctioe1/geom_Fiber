@@ -17,4 +17,5 @@ else
 endif
 echo "setting geometry mode ..."
 pan dbs set geom_mode Fiber
-pan dhe async GUIUPDATE geometry Fiber
+GUIUPDATE geometry Fiber
+GUIUPDATE UNLOCK

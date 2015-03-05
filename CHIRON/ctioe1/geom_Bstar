@@ -1,0 +1,22 @@
+#!/bin/csh -f
+
+#echo "setting detector size ..."
+#pan appmacro set_roi FULL
+echo "setting detector binning ..."
+pan appmacro set_binning 3 1
+#echo "setting detetcor speed ..."
+#pan appmacro speed_normal
+
+echo "positioning slicer motor to slit position ..."
+slicer MOVE slit
+set pos = `iodcell get iodine`
+if ("$pos[2]" == "OFF" || "$pos[2]" == "OUT") then
+        echo "moving iodine cell IN ..."
+        iodcell set iodine IN
+else
+        echo "iodine cell already IN"
+endif
+echo "setting geometry mode ..."
+pan dbs set geom_mode Bstar STR
+GUIUPDATE geometry Bstar
+GUIUPDATE UNLOCK

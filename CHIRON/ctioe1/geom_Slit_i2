@@ -5,7 +5,7 @@ pan appmacro set_roi full
 echo "setting detetcor binning ..."
 pan appmacro set_binning 3 1
 echo "setting detetcor speed ..."
-pan appmacro speed_fast
+pan appmacro speed_normal
 echo "positioning slicer motor to Slit position ..."
 slicer MOVE slit
 set pos = `iodcell get iodine`
@@ -18,3 +18,4 @@ endif
 echo "setting geometry mode ..."
 pan dbs set geom_mode Slit_i2 STR
 pan dhe async GUIUPDATE geometry Slit_i2
+GUIUPDATE UNLOCK
