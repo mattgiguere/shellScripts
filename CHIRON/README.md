@@ -1,6 +1,8 @@
 #shellScripts/CHIRON
 **shell scripts related to CHIRON**
-In this directory are shell scripts related to the [CHIRON Spectrometer](http://www.ctio.noao.edu/noao/content/chiron). There are several machines used for day to day operations of the instrument:
+In this directory are shell scripts related to the [CHIRON Spectrometer](http://www.ctio.noao.edu/noao/content/chiron). There are several machines used for day to day operations of the instrument.
+
+###Machine Descriptions
 
 - **ctioe1**: The data taking machine. Scripts contained in this directory are involved with the collection of new data.
 
@@ -9,3 +11,12 @@ In this directory are shell scripts related to the [CHIRON Spectrometer](http://
 - **exoplanets**: The file server. Scripts replicate the MySQL DB to and from CTIO and sync data and routines.
 
 - **aramis**: Contains scripts to run the quality control and reduction pipelines.
+
+###Script Descriptions
+
+The CHIRON scripts are separated into subdirectories based on the machines they run on.
+
+- ####aramis
+- ####ctimac*
+- ####ctioe1
+- ####exoplanets
