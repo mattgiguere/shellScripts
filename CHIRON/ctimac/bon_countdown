@@ -1,0 +1,17 @@
+#!/bin/csh
+
+set warningtime=$1
+set checkfile=$2
+set decrement=$3
+
+set check = `more $checkfile`
+
+while ($warningtime > 0 && $check > 0)
+    echo "WARNING! Beginning of night calibrations will begin in "$warningtime" seconds!"
+    echo "If you'd like to disable them, put a zero '0' in the contents of the file"
+    echo '/mir7/logs/BONCalibs/BONCalibsCheckFile.log, or simply type "disablebon"'
+    echo 'to re-enable the calibrations, type "enablebon" at the command line.'
+    set warningtime = `echo "$warningtime - $decrement" | bc`
+    sleep $decrement
+    set check = `more $checkfile`
+end #warningtime and check file while loop
