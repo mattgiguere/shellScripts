@@ -1,0 +1,41 @@
+#!/bin/csh -f
+
+set host=`hostname`
+set chi_date = `date "+%y%m%d%H%M%S"`
+if (`date "+%H"` > 12) then
+set chi_nightlyd = `date "+%y%m%d"`
+else
+set chi_nightlyd = `date -v -1d "+%y%m%d"`
+endif
+
+set log = /mir7/logs/ios_temp/${chi_date}_ios.log
+set checkfile = /mir7/logs/IOS/checkfile.log
+echo "0" >& $checkfile
+date >>& $log
+setenv scriptpath /mir7/Scripts
+echo $PATH >>& $log
+chmod 777 $log >>& $log
+
+echo chi_object $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 >>& $log
+
+set stt  = $1
+set cal  = $2
+set obj  = "$3"
+set ra   = $4
+set dec  = $5
+set mag  = $6
+set expt = $7
+set nexp = $8
+set pmod = $9
+set prop = $10
+set xpsp = $11
+
+echo chi_object $stt $cal \"$obj\" $ra $dec $mag $expt $nexp $pmod $prop $xpsp $log >>& $log
+set nightlylog = "/mir7/logs/IOS/nightly/"$chi_nightlyd"_IOS.log"
+echo "nightlylog is: "$nightlylog >>& $log
+echo $stt"," $cal"," $obj"," $ra"," $dec"," $mag"," $expt"," $nexp"," $pmod"," $prop"," $xpsp"," $log >>& $nightlylog
+chmod 777 $nightlylog >>& $log
+echo "Now entering chi_object_wrapper..." >>& $log
+$scriptpath/chi_object_wrapper $stt $cal "$obj" $ra $dec $mag $expt $nexp $pmod $prop $xpsp $log >>& $log
+echo \{\"status\":\"OK\", \"msg\":\"DONE\"\}
+

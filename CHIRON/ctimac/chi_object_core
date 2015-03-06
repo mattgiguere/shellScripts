@@ -1,0 +1,293 @@
+#!/bin/csh -f
+#20120218 ~M. Giguere
+set host=`hostname`
+set chi_date = `date "+%y%m%d%H%M%S"`
+set log = $12
+date >>& $log
+set checkfile = "/mir7/logs/IOS/checkfile.log"
+
+
+set me = `whoami`
+echo "=====================================" >> $log
+echo "STARTED WRITING LOG FOR: "$chi_date >> $log
+echo "=====================================" >> $log
+echo status set to \"h\" for \"help\"\! >> $log
+echo 1: The status flag is:      $1 >> $log
+echo 2: The calibration flag:    $2 >> $log
+echo 3: The object name is:      $3 >> $log
+echo 4: The ra is:               $4 >> $log
+echo 5: The dec is:              $5 >> $log
+echo 6: The Vmag is:             $6 >> $log
+echo 7: The exp time is:         $7 >> $log
+echo 8: The No. of Exposures is: $8 >> $log
+echo 9: The preset mode is:      $9 >> $log
+echo 10: The prop id is:          $10 >> $log
+echo 11: The expmeter set point:  $11 >> $log
+echo 12: The log filename is:    $12 >> $log
+echo The hostname is:  $host "end">> $log
+#echo "chi_object version 0.1.7" >> $log
+echo Running this from user $me >> $log
+set ra = $4 >>& $log
+set dec = $5 >>& $log
+set xpent = $7 >>& $log
+set raFinal = `/usr/bin/perl /mir7/Scripts/raddhms $ra` >>& $log
+set decFinal = `/usr/bin/perl /mir7/Scripts/decdddms $dec` >>& $log
+echo $raFinal >>& $log
+echo $decFinal >>& $log
+
+echo "=====================================" >> $log
+echo "DETERMINING EXPOSURE METER SETPOINT " >> $log
+echo "=====================================" >> $log
+
+#Default Threshold:
+set emthresh = 8e6
+
+#Formula derived from tau ceti 20140215:
+if ("$11" != '') then
+   if ("$11" > 0) then 
+      echo "The value entered for the SNR was: " >>& $log
+      echo "|$11|" >>& $log
+      echo "Now setting the exposure meter threshold accordingly..." >>& $log
+      set snr = $11 >>& $log
+      set slope = 57.909 >>& $log
+      set yoff = 7401.973 >>& $log
+      set emthresh  = `/usr/bin/perl -e 'print '$slope' * '$snr' * '$snr' + '$yoff';'` >>& $log
+      echo "The EM Threshold is now: "$emthresh >>& $log
+   endif
+endif
+
+#Alpha Cen B:
+if ("$3" == '128621') then
+   set emthresh = 5e6
+endif
+
+#Alpha Cen A:
+if ("$3" == '128620') then
+   set emthresh = 6e6
+   if ("$9" == 'Slit_i2') then 
+      #Set lower for the regular slit:
+      set emthresh = 4e6
+   endif
+endif
+
+#Tau Ceti
+if ("$3" == '10700') then
+   #SNR 260
+   set emthresh = 3.88e6
+endif
+
+#Tau Ceti 2014B
+if ("$3" == '10700' && "$10" == '247') then
+   #SNR 260
+   set emthresh = 3.88e6
+   #Double Exposure Time. These are terminated by the exposure
+   #meter (on average) when the given time is reached.
+   set xpent = `/usr/bin/perl -e 'print '$xpent'* 2.5;'` >>& $log
+endif
+
+#Tau Ceti 2014B Narrows
+if ("$3" == '10700' && "$10" == '247' && "$9" == 'Template') then
+   #SNR 300
+   set emthresh = 5.73e6
+   #Double Exposure Time. These are terminated by the exposure
+   #meter (on average) when the time in the script is reached.
+   set xpent = `/usr/bin/perl -e 'print '$xpent'* 2.5;'` >>& $log
+endif
+
+#Eps Eri
+if ("$3" == '22049') then
+   #SNR 232
+   set emthresh = 3.10e6
+endif
+
+#Eps Eri 2014B
+if ("$3" == '22049' && "$10" == '247') then
+   #SNR 232
+   set emthresh = 3.10e6
+   #Double Exposure Time. These are terminated by the exposure
+   #meter (on average) when the given time is reached.
+   set xpent = `/usr/bin/perl -e 'print '$xpent'* 2.5;'` >>& $log
+endif
+
+#Eps Eri 2014B Narrows
+if ("$3" == '22049' && "$10" == '247' && "$9" == 'Template') then
+   #SNR 300
+   set emthresh = 5.30e6
+   #Double Exposure Time. These are terminated by the exposure
+   #meter (on average) when the time in the script is reached.
+   set xpent = `/usr/bin/perl -e 'print '$xpent'* 2.5;'` >>& $log
+endif
+
+#20794
+if ("$3" == '20794') then
+   #SNR 232
+   set emthresh = 3.10e6
+endif
+
+#20794 2014B
+if ("$3" == '20794' && "$10" == '247') then
+   #SNR 232
+   set emthresh = 3.10e6
+   #Double Exposure Time. These are terminated by the exposure
+   #meter (on average) when the given time is reached.
+   set xpent = `/usr/bin/perl -e 'print '$xpent'* 2.5;'` >>& $log
+endif
+
+#HR 472 2014B
+if ("$3" == 'HR 472' && "$10" == '247') then
+   #Double Exposure Time
+   #Double Exposure Time. These are terminated by the exposure
+   #meter (on average) when the given time is reached.
+   set xpent = `/usr/bin/perl -e 'print '$xpent'* 2.5;'` >>& $log
+endif
+
+#MOON NARROW SNR 200
+if ("$3" == 'moon_snr200n') then
+   set emthresh = 2e6
+endif
+
+#MOON NARROW SNR 100
+if ("$3" == 'moon_snr100n') then
+   set emthresh = 5e5
+endif
+
+#MOON REGULAR SNR 200
+if ("$3" == 'moon_snr200r') then
+   set emthresh = 2.3e6
+endif
+
+#MOON REGULAR SNR 100
+if ("$3" == 'moon_snr100r') then
+   set emthresh = 5.75e5
+endif
+
+echo "Exposure meter setpoint set to: "$emthresh >> $log
+
+set sshcteobj = "ssh observer@ctioe1" >>& $log
+if ($me == observer) then
+  set sshcteobj = "ssh ctioe1" >>& $log
+else if ($me == _www) then
+  set sshcteobj = "ssh -i ~_www/.ssh/panview_id_rsa observer@ctioe1" >>& $log
+endif
+
+echo "Requesting information from CHIRON TCS"  >>& $log
+$sshcteobj CHIRON TCS info >>& $log
+
+echo "Setting CHIRON TCS slew RA DEC and Epoch"  >>& $log
+$sshcteobj CHIRON TCS slew $raFinal $decFinal 2000.00 >>& $log
+
+set xptm = `/usr/bin/perl -e 'print '$xpent'* 1000;'` >>& $log
+
+#1st IF to make sure we're on ctimac1
+if ($host == ctimac2.local || $host == ctimac2.ctio.noao.edu || $host == ctimac3.local || $host == ctimac3.ctio.noao.edu) then
+    echo You are now running on $host >> $log
+  #2nd IF to make sure this is not just a status request
+  if ($1 != h) then
+    echo "You are not requesting a status update" >> $log
+	#3rd IF is to separate calibrations to handle them differently
+	if ($2 == 0) then 
+	  echo "This is NOT a calibration" >> $log
+	  
+	  echo "Setting the observation type..." >> $log
+	  $sshcteobj pan set obs.obstype "Object" >>& $log
+	  $sshcteobj GUIUPDATE obstype "Object" >>& $log
+	  sleep 2 >> $log
+	  date >>& $log
+  
+	  echo "Setting the object name to "$3 >> $log
+	  $sshcteobj pan set image.title $3 >>& $log
+
+	  echo " Now waiting for image title update to "$3 >> $log
+	  $sshcteobj GUIUPDATE title >>& $log
+	  sleep 2 >> $log
+          date >>& $log
+    
+	  echo "Setting the exposure time to "$xptm >> $log
+	  $sshcteobj pan set exptime $xptm >>& $log
+	  $sshcteobj GUIUPDATE exptime >>& $log
+	  sleep 2 >> $log
+  
+	  echo "Setting the # Exp to "$8 >> $log
+	  $sshcteobj pan set obs.nimages $8 >>& $log
+	  $sshcteobj GUIUPDATE nimages >>& $log
+	  sleep 2 >> $log
+	  
+	  echo "Setting the Proposal ID to "$10 >> $log
+	  $sshcteobj pan dbs set propid $10 STR >>& $log
+	  $sshcteobj GUIUPDATE propid >>& $log
+	  sleep 2 >> $log
+
+#          if (1 == 0) then 
+#	    echo "Turning the exposure meter on..." >>& $log
+#          $sshcteobj CHIRON EXPM SEND 4 0x01 0xa1
+	  echo "Initializing EM..." >>& $log
+          $sshcteobj CHIRON EXPM INIT >>& $log
+	  echo "Setting the exposure meter threshold..." >>& $log
+	  echo "Values being sent to EM:" >>& $log
+	  echo $sshcteobj CHIRON EXPM SEND THRESHOLD $emthresh $xptm $8 >>& $log
+	  $sshcteobj CHIRON EXPM SEND THRESHOLD $emthresh $xptm $8 >>& $log
+	  echo "Updating EM GUI..." >>& $log
+	  $sshcteobj GUIUPDATE EXPM >>& $log
+	  echo "Getting the exposure meter connections..." >>& $log
+          $sshcteobj expm get connections >>& $log
+	  sleep 2 >> $log
+#          else
+#          echo "Turning the exposure meter off..." >>& $log
+          #$sshcteobj CHIRON EXPM SEND 4 0x01 0xa1
+#          endif
+
+	  echo "Now changing the preset mode to "$9 >> $log
+	  $sshcteobj apps/CHIRON/bin/geom_$9  >>& $log
+          date >>& $log
+
+	else
+	  echo "You must have entered a calibration!" >>& $log
+
+          echo "Setting the prop id to: "$10 >>& $log
+	  $sshcteobj pan dbs set propid $10 STR >>& $log
+	  $sshcteobj GUIUPDATE propid >>& $log
+	  sleep 2 >> $log
+
+          echo "Setting the preset mode to geom_"$9 >>& $log
+	  $sshcteobj apps/CHIRON/bin/geom_$9 >>& $log
+	endif
+  endif
+endif
+
+
+else
+
+if ($host == exoplanets.astro.yale.edu) then
+	 echo You are testing the middleware on the exoplanets server... Great!
+	 echo Goodbye!
+endif
+
+
+#sleep 2
+if ($1 == h) then 
+    echo status set to \"h\" for \"help\"\!
+    echo 1: The status flag is:      $1
+    echo 2: The calibration flag:    $2
+    echo 2: The object name is:      $3
+    echo 3: The ra is:               $4
+    echo 4: The dec is:              $5
+    echo 5: The Vmag is:             $6
+    echo 6: The exp time is:         $7
+    echo 7: The No. of Exposures is: $8
+    echo 8: The preset mode is:      $9
+    echo 9: The prop id is:          $10
+    echo 10: The expmeter set point:  $11
+endif
+endif
+
+echo "=====================================" >> $log
+echo "FINISHED WRITING LOG FOR: "$chi_date >> $log
+echo "=====================================" >> $log
+date >>& $log
+#echo fini42 > $chkfile
+echo "1" >& $checkfile
+
+echo "CHIRON UPDATE COMPLETE!" >>& $log
+echo "You may now start exposing!" >>& $log
+date >>& $log
+sleep 2

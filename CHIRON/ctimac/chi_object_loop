@@ -1,0 +1,30 @@
+#!/bin/csh -f
+
+set host=`hostname`
+set chi_date = `date "+%y%m%d%H%M%S"`
+set log = /mir7/logs/IOS/${chi_date}_ios.log
+set chkfile = /mir7/logs/IOS/checkfile.log
+date >>& $log
+echo unfini > $chkfile
+
+#Make this transparent to the Telescope Operator
+#start_viewlog $log
+
+echo chi_object_core $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $log >>& $log
+#echo now calling chi_object_core
+chi_object_core $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $log >>& $log &
+#echo now moving on.
+
+set thestat = `tail -1 $chkfile`
+#echo thestat is $thestat
+
+while ($thestat != "fini42")
+#while (1 != 0)
+  echo \{\"status\":\"OK\", \"msg\":\"THINKING\"\}
+  sleep 3
+  set thestat = `tail -1 $chkfile`
+  #echo $thestat
+end
+
+#Close to blue status window on ctioe1:
+#kill_viewlog $log

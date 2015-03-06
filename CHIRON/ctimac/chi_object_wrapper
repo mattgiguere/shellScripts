@@ -1,0 +1,69 @@
+#!/bin/csh -f
+
+set host=`hostname`
+set chi_date = `date "+%y%m%d%H%M%S"`
+#set log = /mir7/logs/IOS/${chi_date}_ios.log
+set checkfile = /mir7/logs/IOS/checkfile.log
+set log = $12
+echo 12 is: $12 >>& $log
+echo log is: $log >>& $log
+date >>& $log
+echo \{\"status\":\"OK\", \"msg\":\"DONE\"\} >>& $log
+set debug = 0
+
+#sleep 3
+
+#Make this transparent to the Telescope Operator
+echo "Now writing to blue window " >>& $log
+echo scriptpath is $scriptpath >>& $log
+#$scriptpath/start_viewlog $log
+sleep 5
+set me = `whoami`
+echo "=====================================" >> $log
+echo "STARTED WRITING LOG FOR: "$chi_date >> $log
+echo "=====================================" >> $log
+echo status set to \"h\" for \"help\"\! >> $log
+echo 1: The status flag is:      $1 >> $log
+echo 2: The calibration flag:    $2 >> $log
+echo 3: The object name is:      $3 >> $log
+echo 4: The ra is:               $4 >> $log
+echo 5: The dec is:              $5 >> $log
+echo 6: The Vmag is:             $6 >> $log
+echo 7: The exp time is:         $7 >> $log
+echo 8: The No. of Exposures is: $8 >> $log
+echo 9: The preset mode is:      $9 >> $log
+echo 10: The prop id is:          $10 >> $log
+echo 11: The expmeter set point:  $11 >> $log
+echo 12: The log filename is:    $12 >> $log
+echo The hostname is:  $host "end">> $log
+echo "chi_object version 0.1.9" >> $log
+echo Running this from user $me >> $log
+set ra = $4
+set dec = $5
+
+set raFinal = `/usr/bin/perl /mir7/Scripts/raddhms $ra` >>& $log
+set decFinal = `/usr/bin/perl /mir7/Scripts/decdddms $dec` >>& $log
+echo $raFinal >>& $log
+echo $decFinal >>& $log
+
+if ($debug == 0) then 
+  #echo now calling chi_object_core
+  $scriptpath/chi_object_core $1 $2 "$3" $4 $5 $6 $7 $8 $9 $10 $11 $log &
+  #echo now moving on.
+else
+  echo "=====================================" >> $log
+  echo "FINISHED WRITING LOG FOR: "$chi_date >> $log
+  echo "=====================================" >> $log
+  date >>& $log
+  #echo fini42 > $chkfile
+  
+  echo "CHIRON UPDATE COMPLETE!" >>& $log
+  echo "You may now start exposing!" >>& $log
+  date >>& $log
+  sleep 3
+  echo "1" >& $checkfile
+endif
+#Close the blue status window on ctimac1:
+#$scriptpath/kill_viewlog >>& $log
+
+#echo \{\"status\":\"OK\", \"msg\":\"DONE\"\}
