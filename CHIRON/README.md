@@ -18,11 +18,11 @@ The CHIRON scripts are separated into subdirectories based on the machines they 
 
 - ####aramis
 - ####ctimac*
- - **bon_countdown**: a csh script that takes three arguments and prints a countdown message. This is used to give the telescope operator a 5 minute warning before starting the CHIRON beginning of night calibrations.
+ - **bon_countdown**: A csh script that takes three arguments and prints a countdown message. This is used to give the telescope operator a 5 minute warning before starting the CHIRON beginning of night calibrations.
 #####parameters
    - *warningtime*: The amount of time (in seconds) the countdown message will be broadcast.
-   - *checkfile*: a file that is checked to see if the countdown should continue. If the contents of `checkfile` > 0, then the countdown will continue.
-   - *decrement*: the message refresh rate (in seconds).
+   - *checkfile*: A file that is checked to see if the countdown should continue. If the contents of `checkfile` > 0, then the countdown will continue.
+   - *decrement*: The message refresh rate (in seconds).
 
    The syntax for the script is:
     ```sh
@@ -34,6 +34,10 @@ The CHIRON scripts are separated into subdirectories based on the machines they 
     ```sh
     ./bon_countdown 300 my_check_file 1
     ```
- - **bon_countdown.scpt**: an applescript for launching a Terminal window to start up `bon_countdown`. This was a hack to open a terminal window from a launch daemon script because it couldn't be done through a shell script.
+ - **bon_countdown.scpt**: An applescript for launching a Terminal window to start up `bon_countdown`. This was a hack to open a terminal window from a launch daemon script because it couldn't be done through a shell script.
+
+ - **chi_object**: The middleware csh script driver for the interactive observing script. When the telescope operator clicks the send button, the 11 arguments pertaining to the observation are passed from `send_object.php` to this routine. `chi_object` logs the arguments received into a nightly log, and passes the them to `chi_object_wrapper`.
+ - **chi_object_wrapper**: Another middleware csh script. This receives the input from `chi_object`, opens an x window to show the telescope operator the status of updating all systems with the new observation information, sends a status message back to `send_object.php`, and passes the information on to `chi_object_core`.
+ - **chi_object_core**: The heart of the middleware, `chi_object_core` is the csh script that communicates all information for the next observation to CHIRON. It uses a few lines of perl to convert the ra and dec from hms to decimal degrees, and the exposure time from seconds to milliseconds.
 - ####ctioe1
 - ####exoplanets
