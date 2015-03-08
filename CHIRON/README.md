@@ -34,6 +34,6 @@ The CHIRON scripts are separated into subdirectories based on the machines they 
     ```sh
     ./bon_countdown 300 my_check_file 1
     ```
-
+ - **bon_countdown.scpt**: an applescript for launching a Terminal window to start up `bon_countdown`. This was a hack to open a terminal window from a launch daemon script because it couldn't be done through a shell script.
 - ####ctioe1
 - ####exoplanets
