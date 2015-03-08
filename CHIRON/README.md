@@ -20,9 +20,9 @@ The CHIRON scripts are separated into subdirectories based on the machines they 
 - ####ctimac*
  - **bon_countdown**: a csh script that takes three arguments and prints a countdown message. This is used to give the telescope operator a 5 minute warning before starting the CHIRON beginning of night calibrations.
 #####parameters
-   - warningtime: The amount of time (in seconds) the countdown message will be broadcast.
-   - checkfile: a file that is checked to see if the countdown should continue. If the contents of `checkfile` > 0, then the countdown will continue.
-   - decrement: the message refresh rate (in seconds).
+   - *warningtime*: The amount of time (in seconds) the countdown message will be broadcast.
+   - *checkfile*: a file that is checked to see if the countdown should continue. If the contents of `checkfile` > 0, then the countdown will continue.
+   - *decrement*: the message refresh rate (in seconds).
 
    The syntax for the script is:
     ```sh
