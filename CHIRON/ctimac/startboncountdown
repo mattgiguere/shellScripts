@@ -1,0 +1,3 @@
+#!/bin/csh
+
+/opt/X11/bin/xterm -T "CHIRON Automated BON Calibrations" -geometry 90x5+500+500 -bg black -fg green -e /bin/csh /mir7/scripts/bon_countdown $1 $2 $3
