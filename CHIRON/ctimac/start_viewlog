@@ -1,0 +1,7 @@
+#!/bin/csh -f
+
+set log = $1
+#rm -Rf $log
+echo "Starting log" >>& $log
+xterm -geometry 119x20 -bg blue -fg yellow -e "tail -f $log" &
+sleep 2

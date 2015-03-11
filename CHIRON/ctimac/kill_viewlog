@@ -1,0 +1,13 @@
+#!/bin/csh -f
+
+set tmpfile = /tmp/logshot
+rm -f $tmpfile 
+ps -ax > $tmpfile
+set procid  = `egrep tail $tmpfile | egrep $1 | awk '{print $1}'`
+while ( $#procid > 0 )
+      if ( $procid[1] != "" && $procid[1] != $$ ) then
+              kill -9 $procid[1]
+      endif
+      shift procid
+end
+rm -f $tmpfile
