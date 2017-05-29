@@ -3,7 +3,7 @@
 
 [![MIT-Lic](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/mattgiguere/shellScripts/blob/master/LICENSE)
 
-###Descriptions
+### Descriptions
 ---------------------------------
 - **newdwin**: a very simple one line script to create a new Terminal window with my "DeskNames" settings using `term.sh`. Here's the result:  
 ![DeskNames Example](images/DeskNames.png)  
